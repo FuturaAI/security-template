@@ -75,8 +75,27 @@ jobs:
       #   uv export --frozen --no-dev --no-emit-project -o requirements.txt
       #   uvx pip-audit -r requirements.txt --strict
 
+  # NOTA: questo job copre solo le dipendenze dichiarate nel repo (npm/uv).
+  # Non sostituisce una scansione periodica dell'immagine/infrastruttura in
+  # produzione (vedi trivy-prod.yml, schedulato settimanalmente): un CVE
+  # pubblicato dopo il build non verrebbe intercettato qui finché non
+  # riparte una nuova pipeline.
+  frontend-deps:
+    runs-on: ubuntu-latest
+    defaults:
+      run: { working-directory: frontend }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with: { node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json }
+
+      # --audit-level=high: fallisce solo su HIGH/CRITICAL, coerente con la
+      # soglia usata da trivy sul container (severity HIGH,CRITICAL).
+      - name: Audit
+        run: npm audit --audit-level=high
+
   container:
-    needs: [secrets, sast, deps]
+    needs: [secrets, sast, deps, frontend-deps]
     runs-on: ubuntu-latest
     permissions:
       contents: read
