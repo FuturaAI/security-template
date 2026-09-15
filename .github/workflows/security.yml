@@ -122,6 +122,17 @@ jobs:
       # variable PROD_DIGEST no: il GITHUB_TOKEN di default non può gestire le
       # Actions variables, serve il PAT nel secret GH_PAT_VARIABLES
       # (fine-grained → Variables: Read and write).
+      - name: Debug GH_PAT_VARIABLES (temporaneo)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_VARIABLES }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "GH_TOKEN è VUOTO: il secret GH_PAT_VARIABLES non è visibile in questo job."
+          else
+            echo "GH_TOKEN è impostato (lunghezza: ${#GH_TOKEN})."
+          fi
+
       - name: Push + registra digest
         if: github.ref == 'refs/heads/main'
         env:
