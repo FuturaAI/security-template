@@ -8,3 +8,4 @@ frontend/.next
 __pycache__
 uv.lock
 sbom.json
+
