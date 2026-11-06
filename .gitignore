@@ -9,3 +9,6 @@ __pycache__/
 # Artefatti generati (CI / export locali)
 sbom.json
 requirements.txt
+
+# Database SQLite locale (generato all'avvio con dati fake)
+*.db

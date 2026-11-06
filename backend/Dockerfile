@@ -31,9 +31,14 @@ ENV UV_COMPILE_BYTECODE=1 \
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 
-COPY --chown=app:app main.py .
+COPY --chown=app:app main.py database.py models.py ./
 
-ENV PATH="/app/.venv/bin:$PATH"
+# Il codice resta di root-owned in lettura; solo data/ è scrivibile dall'utente
+# app, così il file SQLite può essere creato senza aprire tutta /app.
+RUN mkdir /app/data && chown app:app /app/data
+
+ENV PATH="/app/.venv/bin:$PATH" \
+    DATABASE_URL="sqlite:////app/data/todo.db"
 USER app
 EXPOSE 8000
 
